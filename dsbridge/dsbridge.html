@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)http://129.204.34.187/ds_h5/js-call-native.html -->
+<html data-blockbyte-bs-uid="75093"><head lang="zh-cmn-Hans"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>DSBridge Test</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=0.5,user-scalable=no">
+    <!--require dsbridge init js-->
+    <!--<script src="https://unpkg.com/dsbridge/dist/dsbridge.js"> </script>-->
+    <script src="dsbridge.js"></script>
+<style>
+    .btn {
+        text-align: center;
+        background: #d8d8d8;
+        color: #222;
+        padding: 20px;
+        margin: 30px;
+        font-size: 24px;
+        border-radius: 4px;
+        box-shadow: 4px 2px 10px #999;
+    }
+
+    .btn:active {
+        opacity: .7;
+        box-shadow: 4px 2px 10px #555;
+    }
+
+</style><style class="blockbyte-bs-style" data-name="content">body>div#blockbyte-bs-indicator>div{opacity:0;pointer-events:none}body>iframe#blockbyte-bs-sidebar.blockbyte-bs-visible,body>iframe#blockbyte-bs-overlay.blockbyte-bs-visible{opacity:1;pointer-events:auto}body.blockbyte-bs-noscroll{overflow:hidden !important}body>div#blockbyte-bs-indicator>div{position:absolute;transform:translate3d(-40px, 0, 0);top:0;left:0;width:40px !important;height:100%;background:rgba(0,0,0,0.5);border-radius:0 10px 10px 0;transition:opacity 0.3s, transform 0.3s;z-index:2}body>div#blockbyte-bs-indicator>div>span{-webkit-mask:no-repeat center/32px;-webkit-mask-image:url(chrome-extension://jdbnofccmhefkmjbkkdkfiicjkgofkdh/img/icon-bookmark.svg);background-color:#ffffff;position:absolute;display:block;top:0;left:0;width:100%;height:100%}body>div#blockbyte-bs-indicator[data-pos='right']{left:auto;right:0}body>div#blockbyte-bs-indicator[data-pos='right']>div{transform:translate3d(40px, 0, 0);left:auto;right:0;border-radius:10px 0 0 10px}body>div#blockbyte-bs-indicator.blockbyte-bs-fullHeight>div{border-radius:0}body>div#blockbyte-bs-indicator.blockbyte-bs-hover>div{transform:translate3d(0, 0, 0);opacity:1}body>div#blockbyte-bs-indicator[data-pos='left'].blockbyte-bs-has-lsb{height:100% !important;top:0 !important}body>div#blockbyte-bs-indicator[data-pos='left'].blockbyte-bs-has-lsb>div{background:transparent}body>div#blockbyte-bs-indicator[data-pos='left'].blockbyte-bs-has-lsb>div>span{-webkit-mask-position-y:20px}body>iframe#blockbyte-bs-sidebar{width:350px;max-width:none;height:0;z-index:2147483646;background-color:rgba(255,255,255,0.8) !important;border:none;display:block !important;transform:translate3d(-350px, 0, 0);transition:width 0s 0.3s, height 0s 0.3s, opacity 0.3s, transform 0.3s}body>iframe#blockbyte-bs-sidebar[data-pos='right']{left:auto;right:0;transform:translate3d(350px, 0, 0)}body>iframe#blockbyte-bs-sidebar.blockbyte-bs-visible{width:calc(100% + 350px);height:100%;transform:translate3d(0, 0, 0);transition:opacity 0.3s, transform 0.3s}body>iframe#blockbyte-bs-sidebar.blockbyte-bs-hideMask{background:none !important}body>iframe#blockbyte-bs-sidebar.blockbyte-bs-hideMask:not(.blockbyte-bs-hover){width:calc(350px + 50px)}body>iframe#blockbyte-bs-overlay{width:100%;max-width:none;height:100%;z-index:2147483647;border:none;background:rgba(0,0,0,0.5) !important;transition:opacity 0.3s}
+</style></head>
+
+<body style="">
+<div class="btn" onclick="setTitle()">设置标题</div>
+<div class="btn" onclick="exit()">退出三方应用</div>
+<div class="btn" onclick="goBack()">页面返回</div>
+<div class="btn" onclick="closeWebview()">关闭当前窗体</div>
+<div class="btn" onclick="newWebview()"> 打开新窗体</div>
+<div class="btn" onclick="openInBrowser()">使用外部浏览器打开</div>
+<div class="btn" onclick="appAlert()">警告窗</div>
+<div class="btn" onclick="confirm()">确认窗</div>
+<div class="btn" onclick="toast()">若提示窗</div>
+<div class="btn" onclick="showLoading()">显示加载窗</div>
+<div class="btn" onclick="hideLoading()">隐藏加载窗</div>
+
+<div>===========================功能分割线===========================</div>
+<div class="btn" onclick="scan()">调用扫码</div>
+<div class="btn" onclick="chooseImage()">图片选择</div>
+<div class="btn" onclick="getCurrentLocation()">定位信息</div>
+
+
+<div>===========================业务分割线===========================</div>
+<div class="btn" onclick="getUserInfo()">获取用户信息</div>
+<div class="btn" onclick="doWechatPay()">微信支付</div>
+
+
+<script>
+
+    var titleData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"接口版本号v4.0.1\",\n" +
+        "    \"data\":{\n" +
+        "        \"title\":\"智慧城市\",\n" +
+        "        \"bgColor\":\"#E32B29\",\n" +
+        "        \"textColor\":\"#0066FF\",\n" +
+        "        \"btnRightText\":\"右侧按钮文字\",\n" +
+        "        \"btnRightImg\":\"http://118.31.37.94/ds_h5/timg.jpg\",\n" +
+        "        \"btnRightList\":[\n" +
+        "            \"展开列表1\",\n" +
+        "            \"展开列表2\",\n" +
+        "            \"展开列表3\"\n" +
+        "        ]\n" +
+        "    }\n" +
+        "}\n";
+
+    var jsonData = {
+        "app_key": "三方H5APP唯一识别号",
+        "version": "v1.0.1",
+    }
+
+    function printTag(){
+        console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+    }
+
+    function setTitle() {
+        dsBridge.call("UIApi.setTitle", titleData, function (v) {
+            alert(v)
+        })
+    }
+
+
+    var noData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"1.0.0\"\n" +
+        "}\n";
+
+    function exit() {
+        dsBridge.call("UIApi.exit", noData, function (v) {
+            console.log(v)
+        })
+
+    }
+
+    function goBack() {
+        dsBridge.call("UIApi.goBack", noData, function (v) {
+            console.log(v)
+        });
+    }
+
+    function closeWebview() {
+        dsBridge.call("UIApi.closeWebview", noData, function (v) {
+            console.log(v);//在关闭功能不能调用alert，移动端实现了jsAlert,关闭的activity无法弹出会报android.view.WindowLeaked:
+        });
+    }
+
+    var newWebViewData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"1.0.0\",\n" +
+        "    \"data\":{\n" +
+        "        \"url\":\"https://www.unicde.com\"\n" +
+        "    }\n" +
+        "}\n";
+
+
+    var newWebData = {
+        app_key: "LYG_LYNK",
+        version: "V1.0.0",
+        data: {
+            url:  "https://lygxfmf.jundie.net/weixin_xuexi/clear_score/user_click?id=4425&illegal_score=1&from_source=wdlyg"
+        }
+    };
+    newWebViewData = JSON.stringify(newWebData);
+
+    function newWebview() {
+        dsBridge.call("UIApi.newWebview", newWebViewData, function (v) {
+
+        });
+    }
+
+    function openInBrowser() {
+        dsBridge.call("UIApi.openInBrowser", newWebViewData, function (v) {
+            alert(v)
+        });
+    }
+
+    var alertData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"1.0.0\",\n" +
+        "    \"data\":{\n" +
+        "        \"title\":\"这是警告窗标题\",\n" +
+        "        \"content\":\"这是警告窗内容\"\n" +
+        "    }\n" +
+        "}\n";
+
+    function appAlert() {
+        dsBridge.call("UIApi.alert", alertData, function (v) {
+            console.log(v);
+        });
+    }
+
+    var confimData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"1.0.0\",\n" +
+        "    \"data\":{\n" +
+        "        \"title\":\"这是警告窗标题\",\n" +
+        "        \"content\":\"这是警告窗内容\",\n" +
+        "        \"btnLeftText\":\"取消\",\n" +
+        "        \"btnRightText\":\"确定\"\n" +
+        "    }\n" +
+        "}\n";
+
+    function confirm() {
+        dsBridge.call("UIApi.confirm", confimData, function (v) {
+            console.log(v);
+        });
+    }
+
+    var toastData = "{\n" +
+        "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+        "    \"version\":\"1.0.0\",\n" +
+        "    \"data\":{\n" +
+        "        \"tips\":\"这是提示内容\"\n" +
+        "    }\n" +
+        "}\n";
+
+    function toast() {
+        dsBridge.call("UIApi.toast", toastData, function (v) {
+            alert(v)
+        });
+    }
+
+
+    function showLoading() {
+        dsBridge.call("UIApi.showLoading", noData, function (v) {
+            alert(v)
+        });
+    }
+
+    function hideLoading() {
+        dsBridge.call("UIApi.hideLoading", noData, function (v) {
+            alert(v)
+        });
+    }
+
+    //=======================================功能接口调用=================================
+
+    function scan() {
+        dsBridge.call("FunctionApi.scan", noData, function (v) {
+            console.log(v);
+            alert(v)
+        });
+    }
+
+    function chooseImage() {
+        dsBridge.call("FunctionApi.chooseImage", noData, function (v) {
+            console.log(v);
+            alert(v)
+        });
+    }
+
+    function getCurrentLocation() {
+        dsBridge.call("FunctionApi.getCurrentLocation", noData, function (v) {
+            console.log(v);
+            alert(v)
+        });
+    }
+
+    //=======================================业务接口调用=================================
+
+    function getUserInfo() {
+        dsBridge.call("BusinessApi.getUserInfo", noData, function (v) {
+            console.log(v);
+            alert("1::" + v)
+        });
+        dsBridge.call("BusinessApi.getUserInfo", jsonData, function (v) {
+            console.log(v);
+            alert("2::" + v)
+        });
+        var jsonDataString = JSON.stringify(jsonData);
+        dsBridge.call("BusinessApi.getUserInfo", jsonDataString, function (v) {
+            console.log(v);
+            alert("3::" + v)
+        });
+    }
+
+    function doWechatPay() {
+        var payData = "{\n" +
+            "    \"app_key\":\"三方H5APP唯一识别号\",\n" +
+            "    \"version\":\"1.0.0\",\n" +
+            "    \"data\":{\n" +
+            "        \"referer\":\"http://travel.myipp.cn\",\n" +
+            "        \"payUrl\":\"https://wx.tenpay.com/cgi-bin/mmpayweb-bin/checkmweb?prepay_id=wx11114145745797cf5007e3b31423307700&package=1037687096\"\n" +
+            "    }\n" +
+            "}";
+
+        dsBridge.call("BusinessApi.doWechatPay", payData, function (v) {
+            console.log(v);
+            alert("1::" + v)
+        });
+
+    }
+
+
+    //=======================================native-call-js=================================
+
+    //左上角返回键和Android物理返回按键监听 onBackClickListener
+    dsBridge.register('onBackClickListener', function (r) {
+        console.log("返回键监听事件：：" + r)
+        return r;
+    })
+    //应用从前台切换到后台状态监听 onPauseListener
+    dsBridge.register('onPauseListener', function (r) {
+        console.log("应用到后台了：：" + r)
+        return r;
+    })
+    //应用从后台切换到前台状态 onResumeListener
+    dsBridge.register('onResumeListener', function (r) {
+        console.log("应用到前台了：：" + r)
+        return r;
+    })
+    //右上角按钮点击监听 onTopRightClickListener
+    dsBridge.register('onTopRightClickListener', function (r) {
+        console.log("右侧按钮点击事件：：" + r)
+        return r;
+    })
+
+
+    //=======================================native-call-js=================================
+
+</script>
+
+
+<iframe id="blockbyte-bs-sidebar" class="notranslate" data-pos="left" src="./DSBridge Test_files/saved_resource.html"></iframe><div id="blockbyte-bs-indicator" style="width: 1px; height: 23%; top: 0%;"></div></body></html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+    <title>隆尧大屏项目(动画点)</title>
+
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+       .dialog-wrap {
+        display: inline-block;
+        padding: 25px 43px;
+        background-color: #001229;
+        opacity: .8;
+        color: #2AB6EF;
+        border: #2dc2df solid 1px;
+        font-size: 18px;
+      }
+      .dialog-wrap .title {
+        margin-bottom: 18px;
+        text-align: center;
+      }
+      .dialog-wrap .item {
+        color: #fff;
+        font-size: 14px;
+        margin-bottom: 3px;
+      }
+      .fr {
+        float: right;
+      }
+      
+       .close {
+        cursor: pointer;
+        color:red;
+      }
+
+    </style>
+
+    <!--加载ZGMap.js-->
+     <script type="text/javascript" src="https://gis.unicloud.com/iot/ZGMapApi/ZGMapApi.js"></script> 
+  
+</head>
+
+<body style="overflow-x:hidden;overflow-y:hidden">
+
+
+<div id='mapContainer2' style="width:100%; height: 100%; margin: 0; padding: 0; overflow: hidden;float:left; position: relative">
+    <div id='legend' style="position: absolute; bottom: 80px ; z-index: 999">
+        <input type="button"  value="刷新空气" onclick="refreshSource('air');">
+        <input type="button"  value="刷新排污" onclick="refreshSource('paiwu');">
+        <input type="button"  value="空气" onclick="set2LayerVisible('air');">
+        <input type="button"  value="排污" onclick="set2LayerVisible('paiwu');">
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+ layerNameAir='air';
+ layerNamePaiwu='paiwu';
+  var popOverlay=null;
+
+ function set2LayerVisible(type){
+    if(type=='air'){
+      myMap2.getVectorLayer(layerNameAir).setVisible(true);
+      myMap2.getVectorLayer(layerNamePaiwu).setVisible(false);
+    }else{
+      myMap2.getVectorLayer(layerNameAir).setVisible(false);
+      myMap2.getVectorLayer(layerNamePaiwu).setVisible(true);
+    }
+  }
+//刷新点数据
+function refreshSource(type){
+    //刷新空气图层
+    if(type=='air'){
+         let myLayer=myMap2.getVectorLayer(layerNameAir);
+        
+         var pointData = [  {"x":114.606529,"y":37.400788,"name":'scott2',"temperature":36.5,"type":"air1"},
+                            {"x":114.606529,"y":37.440788,"name":'bill2',"temperature":36.8,"type":"air"},
+                           
+                            ];
+         var geojson=myMap2.points2Geojson(pointData);
+         var newfeatures=(new ol.format.GeoJSON()).readFeatures(geojson,{
+                            dataProjection: 'EPSG:4326',
+                            featureProjection: 'EPSG:3857'
+                         });
+           var oldfeatures=myLayer.getSource().getFeatures();
+           var featurecount=oldfeatures.length;
+           //删除旧数据
+           for(var i=featurecount-1;i>=0;i--){
+             myLayer.getSource().removeFeature(oldfeatures[i]);
+           }
+           //批量加载新数据
+           myLayer.getSource().addFeatures(newfeatures);
+       }else{
+       //刷新排污图层
+       let myLayer2=myMap2.getVectorLayer(layerNamePaiwu);
+       var pointData2 = [  
+                        {"x":114.706529,"y":37.450788,"name":'tom2',"temperature":38,"type":"paiwu1"},
+                        {"x":114.806529,"y":37.460788,"name":'scott2',"temperature":37,"type":"paiwu"},
+                        ];
+         var geojson2=myMap2.points2Geojson(pointData2);
+         var newfeatures2=(new ol.format.GeoJSON()).readFeatures(geojson2,{
+                            dataProjection: 'EPSG:4326',
+                            featureProjection: 'EPSG:3857'
+                         });
+           var oldfeatures2=myLayer2.getSource().getFeatures();
+           var featurecount2=oldfeatures2.length;
+           //删除旧数据
+           for(var i=featurecount2-1;i>=0;i--){
+             myLayer2.getSource().removeFeature(oldfeatures2[i]);
+           }
+           //批量加载新数据
+           myLayer2.getSource().addFeatures(newfeatures2);
+       }
+     
+}
+    
+   //移出时清除地图tooltip
+    function clearInfo() {
+      myMap2.removeOverlay(popOverlay);
+    }
+
+    function popWindow(dic_values, point) {
+         myMap2.removeOverlay(popOverlay);
+         var htmls='<div class="dialog-wrap">'+
+                        '<div class="title">'+dic_values['name']+'</div>'+
+                      '<div class="item">温度: &nbsp;'+dic_values['temperature']+'</div>'+
+                      '<div class="item">状态: &nbsp;'+dic_values['type']+'</div>'+
+                    '</div>'
+
+        var coor=ol.proj.transform(point,'EPSG:3857','EPSG:4326');
+        //这里的-80和-27是弹框相对于点的x,y偏移值，可以根据具体需要调整，比如弹框可以在点的正上方或者右上方
+		popOverlay=myMap2.addOverlay(htmls,coor,[-80,-38]);
+    }
+
+      function imgFilter(evt){
+      var image = evt.tile.getImage();
+             var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            var context = canvas.getContext( '2d' );
+            context.drawImage( image,0,0,256,256);
+            // 获取图片像素信息
+            var imageData = context.getImageData(0,0,256,256);
+            var pixels = imageData.data;
+            //遍历像素点
+             let filterA=0.5;
+            for (var i=0; i<pixels.length; i+=4){
+              var r = pixels[i];
+              var g = pixels[i+1];
+              var b = pixels[i+2];
+              var gray2 = (255 - r + 255 - g + 255 - b) / 3;
+              pixels[i]=(1-filterA)*8 + filterA*gray2;
+              pixels[i+1]=(1-filterA)*39 + filterA*gray2;
+              pixels[i+2]=(1-filterA)*127 + filterA*gray2;
+            }
+            context.putImageData(imageData, 0,0);
+            image.src = canvas.toDataURL("image/png");
+    }
+
+
+    //初始化地图控件，并绑定div
+    var myMap2 = new ZGMap('mapContainer2');
+   
+    
+    //地图初始化
+    myMap2.initMap().then(() => {
+        //设置地图显示范围
+        myMap2.centerAndZoom(114.783970, 37.377877, 11);
+        myMap2.setMinMaxZoom(11,18);
+        //myMap2.switchBaseLayer('SL');//设置哪个底图可见，"SL"矢量图层，'YX'影响图层，'WYL'午夜蓝
+        myMap2.setBaseLayerVisible(false);
+        myMap2.setLayerSwitcherVisible(true);
+        myMap2.setMousePositionVisible(false);
+        myMap2.setOverViewMapControlVisible(false);
+        myMap2.setScaleLineVisible(false);
+        myMap2.setZoomSliderVisible(false);
+        myMap2.setMapSwitchVisible(false);
+        myMap2.addTileLayer('滤镜切片图层矢量', 'http://t{0-6}.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=2faa8660bab591c4ac7e845b494e9e30');
+        myMap2.addTileLayer('滤镜切片图层文字', 'http://t{0-6}.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=2faa8660bab591c4ac7e845b494e9e30');
+        myMap2.getVectorLayer('滤镜切片图层矢量').getSource().on("tileloadend",imgFilter);
+        myMap2.getVectorLayer('滤镜切片图层文字').getSource().on("tileloadend",imgFilter);
+        //放大到11级以后才显示文字
+        //myMap2.getVectorLayer('滤镜切片图层文字').setMaxResolution(myMap2.map.getView().getResolutionForZoom(11));
+        var airflashstyles=[
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[0,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[66,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[132,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[198,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[264,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/airflash.png',size:[66,66],offset:[330,0]})}),
+            ];
+            
+        var paiwuflashstyles=[
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[0,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[66,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[132,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[198,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[264,0]})}),
+             new ol.style.Style({image: new ol.style.Icon({scale:1,src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuflash.png',size:[66,66],offset:[330,0]})}),
+        ];
+        var point_styles = {
+            "info": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/airok.png',
+                }),
+            }),
+            "ok": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwuok.png',
+                }),
+            }),
+            "air": airflashstyles[0],
+            "paiwu": paiwuflashstyles[0],
+ 
+         };
+         
+         var pointBig_styles = {
+            "ok": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/okbig.png',
+                }),
+            }),
+            "info": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/infobig.png',
+                }),
+            }),
+            "air": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/air.png',
+                }),
+            }),
+            "paiwu": new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'https://gis.unicloud.com/xiaoqu/lyx/paiwu.png',
+                }),
+            }),
+ 
+         };
+         //默认点图层渲染函数
+          var pointStyleFunction=function(feature,resolution){
+              if(feature.get('type')=='paiwu1' ){
+                return point_styles['ok'];
+              }else if(feature.get('type')=='air1'){
+                return point_styles['info'];
+              }else if(feature.get('type')=='air'){
+                return point_styles['air'];
+              }else if(feature.get('type')=='paiwu'){
+                return point_styles['paiwu'];
+              }
+            }
+          //点hover后的渲染函数
+          var pointBigStyleFunction=function(feature,resolution){
+              if(feature.get('type')=='paiwu1' ){
+                return pointBig_styles['ok'];
+              }else if(feature.get('type')=='air1'){
+                return pointBig_styles['info'];
+              }else if(feature.get('type')=='air'){
+                return pointBig_styles['air'];
+              }else if(feature.get('type')=='paiwu'){
+                return pointBig_styles['paiwu'];
+              }
+            }
+            
+        //xzq
+         var layerStyleXZQ = '{"StyleId":"","StyleName":"默认面样式","StyleType":"polygon","LevelList":[{"Level":18,"RenderField":"","DiplayField":"name","ClassList":[{"value":1,"label":"类别1","FilterString":"","OLStyle":{"Icon":{"src":"https://gis.unicloud.com/xiaoqu/hh/guo.png","opacity":1,"scale":1},"Stroke":{"Color":"rgba(63,134,248, 1)","Width":3,"LineDash":[]},"Fill":{"Color":"rgba(81,135,253,0.3)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(200,200,200, 1)"},"Stroke":{"Color":"rgba(132, 251, 246, 0)","Width":3,"LineDash":[]},"offsetX":0,"offsetY":20}}}]}]}';
+         
+         
+         let boundStyle='{"StyleId":"","StyleName":"默认面样式","StyleType":"polygon","LevelList":[{"Level":18,"RenderField":"level","DiplayField":"","ClassList":[{"value":28,"label":"类别1","FilterString":"=,28","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.5)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":29,"label":"类别2","FilterString":"=,29","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.4)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":30,"label":"类别3","FilterString":"=,30","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.3)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":31,"label":"类别4","FilterString":"=,31","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.2)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":32,"label":"类别5","FilterString":"=,32","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.1)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":33,"label":"类别6","FilterString":"=,33","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.08)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":34,"label":"类别7","FilterString":"=,34","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.05)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":35,"label":"类别8","FilterString":"=,35","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.03)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":36,"label":"类别9","FilterString":"=,36","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.01)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}}]},{"Level":13,"RenderField":"level","DiplayField":"","ClassList":[{"value":19,"label":"类别1","FilterString":"=,19","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.5)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":20,"label":"类别2","FilterString":"=,20","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.4)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":21,"label":"类别3","FilterString":"=,21","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.3)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":22,"label":"类别4","FilterString":"=,22","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.2)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":23,"label":"类别5","FilterString":"=,23","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.1)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":24,"label":"类别6","FilterString":"=,24","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.08)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":25,"label":"类别7","FilterString":"=,25","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.05)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":26,"label":"类别8","FilterString":"=,26","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.03)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":27,"label":"类别9","FilterString":"=,27","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.01)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}}]},{"Level":10,"RenderField":"level","DiplayField":"","ClassList":[{"value":10,"label":"类别1","FilterString":"=,10","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.5)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":11,"label":"类别2","FilterString":"=,11","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.4)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":12,"label":"类别3","FilterString":"=,12","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.3)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":13,"label":"类别4","FilterString":"=,13","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.2)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":14,"label":"类别5","FilterString":"=,14","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.1)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":15,"label":"类别6","FilterString":"=,15","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.08)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":16,"label":"类别7","FilterString":"=,16","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.05)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":17,"label":"类别8","FilterString":"=,17","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.03)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":18,"label":"类别9","FilterString":"=,18","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.01)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}}]},{"Level":7,"RenderField":"level","DiplayField":"","ClassList":[{"value":1,"label":"类别1","FilterString":"=,1","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.5)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":2,"label":"类别2","FilterString":"=,2","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.4)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":3,"label":"类别3","FilterString":"=,3","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.3)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":4,"label":"类别4","FilterString":"=,4","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.2)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":5,"label":"类别5","FilterString":"=,5","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.1)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":6,"label":"类别6","FilterString":"=,6","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.08)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":7,"label":"类别7","FilterString":"=,7","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.05)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":8,"label":"类别8","FilterString":"=,8","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.03)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}},{"value":9,"label":"类别9","FilterString":"=,9","OLStyle":{"Icon":{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4T6XTO0hCYRQH8P//9kCH8kFD0AMklagxiNaiqbFF2kJavLZUa7S4NrR4JSJqqrGlaG0Ld6n0GgQRhMG9Qg+T6p5QUzJ73Evf+p3/j/N9nEP887Alv33R5S23z1NkDsQIRF4BnEPhnlly7WJ5oPQ50wR4tPxYm8ghiN7vGhPgGuSMGQtm6vcNwJPKTyliHRPs/ONVT7AwbSyGTit1VcCdyva5LeUMRLedLxHAfCGHH2LBQhXwarlVBUzYCddrLGCpqIY2qoBfy6UBjjsBBDgx1dBkFfBpuTuCPc4AuTLVcOAD0A0CPicAIDeGGu6vAUk9Q2LUESCSNuLhidonJvV1hVhxBjBhxINrtQ42Lwf5ZmUBuOwhcl+WjvBjPHDbGCS/pi8A2LIDWORsMRY8aAxSPeRP5iNCSyPo/wEqCJSoqQ4dtYxyI1BZpmclSjDStEzgvll27fy6THba/1rzDmXkdRF3CSXeAAAAAElFTkSuQmCC","opacity":1,"scale":1},"Stroke":{"Color":"rgba(0, 0, 255, 0)","Width":1,"LineDash":[]},"Fill":{"Color":"rgba(0, 230, 255, 0.01)","imgsrc":"","img":{}},"Text":{"Font":"bold 16px 宋体","Fill":{"Color":"rgba(0,0,0,1)"},"Stroke":{"Color":"rgba(255,255,255,1)","Width":5,"LineDash":[]},"offsetX":0,"offsetY":20}}}]}]}';
+          myMap2.addVectorLayer('XZQblund', 'https://gis.unicloud.com/xiaoqu/lyx/bound.geojson',boundStyle);
+         myMap2.addVectorLayer('XZQ', 'https://gis.unicloud.com/xiaoqu/lyx/lyx.geojson',layerStyleXZQ);
+         //放大到12级后行政区就消失了
+         myMap2.getVectorLayer('XZQ').setMinResolution(myMap2.map.getView().getResolutionForZoom(12));
+         myMap2.getVectorLayer('XZQblund').setMinResolution(myMap2.map.getView().getResolutionForZoom(12));
+          //显示点
+        var pointData = [
+                        {"x":114.606529,"y":37.400788,"name":'scott',"temperature":36.5,"type":"air1"},
+                        {"x":114.606529,"y":37.340788,"name":'bill',"temperature":36.8,"type":"air"},
+                        ];
+                        
+        var pointGeojson=myMap2.points2Geojson(pointData);
+        myMap2.addVectorLayerFromGeojson(layerNameAir,pointGeojson,pointStyleFunction);
+        myMap2.addMapHoverEvent({layerTitle:layerNameAir,style:pointBigStyleFunction,callbackFunction:popWindow,callbackFunctionOut:clearInfo});  
+        
+         var pointData2 = [
+                        {"x":114.706529,"y":37.350788,"name":'tom',"temperature":38,"type":"paiwu1"},
+                        {"x":114.806529,"y":37.360788,"name":'scott3',"temperature":37,"type":"paiwu"},
+                        ];
+                        
+        var pointGeojson2=myMap2.points2Geojson(pointData2);
+        myMap2.addVectorLayerFromGeojson(layerNamePaiwu,pointGeojson2,pointStyleFunction);
+        myMap2.addMapHoverEvent({layerTitle:layerNamePaiwu,style:pointBigStyleFunction,callbackFunction:popWindow,callbackFunctionOut:clearInfo}); 
+        //排污默认不可见
+        myMap2.getVectorLayer(layerNamePaiwu).setVisible(false);
+        let flashIndex=0;
+        let airLayer=myMap2.getVectorLayer(layerNameAir);
+        let paiwuLayer=myMap2.getVectorLayer(layerNamePaiwu);
+        setInterval(function(){
+            point_styles['air']=airflashstyles[flashIndex%6];
+            point_styles['paiwu']=paiwuflashstyles[flashIndex%6];
+            airLayer.getSource().refresh();
+            paiwuLayer.getSource().refresh();
+            if(0==flashIndex%6){
+              flashIndex=0;
+            }
+            flashIndex++
+        },166);
+        
+    });
+</script>
+
+
+</body>
+</html>
