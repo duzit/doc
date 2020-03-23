@@ -114,8 +114,8 @@ oo instanceof Object // true
   })
 
 ### HTML5 存储
-* sessionStorage: 大小上限为2.5Mb(不同浏览器会有差异)，页面关闭时清空。
-* localStorage: 大小上限为2.5Mb(不同浏览器会有差异)，页面关闭时不会清空。
+* sessionStorage: 大小上限为5Mb(不同浏览器会有差异)，页面关闭时清空。
+* localStorage: 大小上限为5Mb(不同浏览器会有差异)，页面关闭时不会清空。
 #### api
 * setItem(key, value)
 * getItem(key)
