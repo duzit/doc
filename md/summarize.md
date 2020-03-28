@@ -634,3 +634,10 @@ thisArg
 
 ### 调用浏览器打印功能
 * window.print()
+
+### font-variant  small-caps 小型大写字母
+
+### text-transform 属性控制文本的大小写 
+* capitalize 以大写字母开头
+* uppercase 大写
+* lowercase 小写
