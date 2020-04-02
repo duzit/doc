@@ -179,3 +179,25 @@ console.log(arrFill, 'arrfill after fill()')
 /**
  * Array end 
  */
+
+/**
+ * Symbol 
+ */
+
+let s = Symbol()
+console.log(s, 'Symbol()') // 'symbol'
+
+let s1 = Symbol('s1')
+let s2 = Symbol('s2')
+console.log(s1.toString())
+console.log(s2.toString())
+
+let sObj = {
+  name: 'zhang'
+}
+let s3 = Symbol(sObj)
+console.log(s3, 'sObj') // Symbol([object Object]) "sObj"
+
+let s4 = Symbol('ben')
+let s5 = Symbol('ben')
+console.log(s4 === s5, 's4 === s5') // false

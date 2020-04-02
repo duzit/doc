@@ -641,3 +641,17 @@ thisArg
 * capitalize 以大写字母开头
 * uppercase 大写
 * lowercase 小写
+
+### Reflect.ownKeys() 
+* 返回一个由目标对象自身的属性键组成的数组
+```
+const obj = {
+  name: 'zhang',
+  age: 10,
+  [Symbol('height')]: 175
+}
+Reflect.ownKeys(obj) // ['name', 'age', Symbol(height)]
+Reflect.ownKeys([]) // ['length']
+Object.getOwnPropertySymbols(obj) // [Symbol(height)]
+```
+* http://caibaojian.com/es6/symbol.html
