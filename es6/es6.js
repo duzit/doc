@@ -201,3 +201,22 @@ console.log(s3, 'sObj') // Symbol([object Object]) "sObj"
 let s4 = Symbol('ben')
 let s5 = Symbol('ben')
 console.log(s4 === s5, 's4 === s5') // false
+
+/**
+ * weakmap 对象是一组键值对集合 其中的键是弱引用的 只能是对象，值是任意的
+ * new WeakMap([iterable]) 
+ * iterable 是一个数组（二维数组）或者其他可迭代的且其元素是键值对的对象， null 会被当做 undefined
+ * 
+ */
+let wm0 = new WeakMap()
+let wm1 = new WeakMap()
+
+let wmO0 = {}
+let wmO1 = [1, 2, 3]
+let wmO2 = null
+wm0.set(wmO0, 'wm')
+console.log(wm0.get(wmO0), 'wm0.get(wmO0)')
+wm1.set(wmO1, wmO1)
+console.log(wm1.get(wmO1), 'wm1.get(wmO1)')
+console.log(wm1.has(wmO1), 'WeakMap.has()')
+// wm1.set(wmO2, wmO2) // 报错 Invalid value used as weak map key
