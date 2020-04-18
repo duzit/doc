@@ -6,7 +6,9 @@
 * 始终指向最后调用它的对象
 
 ```
-直接不带任何引用形式去调用函数，则this会指向全局对象，因为没有其他影响去改变this，this默认就是指向全局对象（浏览器是window，Node中是global）的。这个结论是在非严格模式的情况下，严格模式下这个this其实是undefined的。
+直接不带任何引用形式去调用函数，则this会指向全局对象，因为没有其他影响去改变this，  
+this默认就是指向全局对象（浏览器是window，Node中是global）的。这个结论是在非严格模式的情况下，  
+严格模式下这个this其实是undefined的。  
 var a = 1
 function test () {
     console.log(this.a)

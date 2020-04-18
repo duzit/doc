@@ -165,3 +165,7 @@ beforeRouteUpdate(to, from, next) {
 }
 ```
 
+### 动态传递prop 
+* v-bind:title="obj.title"
+* $event
+
