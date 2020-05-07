@@ -275,7 +275,7 @@ function getFirstLastDay(month, flag) {
 
   > upstream 模块实现
 
-  ```
+  ```conf
   http {
     upstream demo {
       ip_hash; // 如果第一次访问该服务器后就记录，之后再访问都是该服务器了
@@ -313,7 +313,7 @@ display: -webkit-box;
 ### apply call bind
 * call
 
-```
+```js
 let user = {
   name: 'Bruce Lee',
   WhatIsYourName: function() {
@@ -331,7 +331,7 @@ user.WhatIsYourName.call(user2) // Ben
 
 * apply 使用数组指定参数
 
-```
+```js
 let user = {
   greet: 'Hello',
   greetUser: function(userName) {
@@ -349,7 +349,7 @@ user.greetUser.apply(greet1, ['Ben']) // NiHao Ben
 
 * bind 可以为函数绑定this值，然后作为一个新的函数返回
 
-```
+```js
 let user = {
   greet: 'Hello',
   greetUser: function(userName) {
@@ -366,7 +366,7 @@ greetNiHao('Tom') // NiHao Tom
 ### 打包后的chunk-vendors.xxx.js文件中含有es6语法
 * android低版本加载es6语法失败，使用babel-loader转义后依然存在es6
 
-```
+```js
 module: {
   rules: [{
     test: /\.js$/,
@@ -395,7 +395,7 @@ module: {
 * 引用dsbridge.js
 * 注册回调方法
 
-```
+```js
 dsBridge.register('submit', () => {
   return this.updateOrderStatus()
 })
@@ -403,7 +403,7 @@ dsBridge.register('submit', () => {
 
 * 在回调函数中调用app接口
 
-```
+```js
 let toastData = "{\n" +
 "    \"app_key\":\"UNICLOUD\",\n" +
 "    \"version\":\"1.0.1\",\n" +
@@ -421,7 +421,7 @@ dsBridge.call("UIApi.toast", toastData, function(info) {
   body的最小宽度。如果项目没有html和body的最小宽度或其他设置，
   h5页面设置宽高100%即可。
 
-```
+```css
 @media screen and (min-width: 500px) {
   html,
   body {
@@ -442,7 +442,7 @@ dsBridge.call("UIApi.toast", toastData, function(info) {
  （创建了）一个包含了 test 文件夹（不包含子目录）下面的、所有文件名以 `.test.js` 结尾的、能被 require 请求到的文件的上下文。
 
 ### 字体颜色渐变
-```
+```css
 .description {
   font-size: 18px;
   font-weight: bold;
@@ -468,7 +468,7 @@ dsBridge.call("UIApi.toast", toastData, function(info) {
 ### 本地使用monaco-editor遇到的问题
 > vue.config.js添加配置
 
-```
+```js
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
@@ -530,13 +530,13 @@ export function getParent(data2, nodeId2) {
 ### window.history 
 > history.back() 浏览器后退功能相同
 > history.forward() 浏览器向前功能相同
-> history.go(n) 接收一个整数作为参数，移动到该整数指定的页面
-  go(1) == forward()
-  go(-1) == back()
-  go(0) 刷新当前页面
+> history.go(n) 接收一个整数作为参数，移动到该整数指定的页面  
+  go(1) == forward()  
+  go(-1) == back()  
+  go(0) 刷新当前页面  
 
 ### el-autocomplete
-```
+```js
 <el-autocomplete
     v-model="state4"
     :fetch-suggestions="querySearchAsync"
@@ -547,7 +547,7 @@ export function getParent(data2, nodeId2) {
 ```
 
 ### vue 如何获取拉回数据后图片的高度
-```
+```js
 <img
   :src="userInfo.profilePicture"
   alt
@@ -583,7 +583,7 @@ input::-webkit-input-placeholder{
 
 ### hasOwnProperty 
 > 返回一个布尔值，指示对象自身是否具有指定的属性
-```
+```js
 let object = {
   name: ''
 }
@@ -599,11 +599,11 @@ object.hasOwnProperty('code') // false
   启动命令 serve  在dist目录启动
 
 ### 审查项目的 webpack 配置
-> vue inspect --mode production > production.js
+> vue inspect --mode production > production.js  
 > vue inspect > output.js
 
 ### npm 查看和设置源
-> npm config get registry
+> npm config get registry  
 > npm config set registry http://10.0.53.132/artifactory/api/npm/npm/
 
 ### filter() 创建一个新数组，
@@ -645,7 +645,7 @@ thisArg
 
 ### Reflect.ownKeys() 
 * 返回一个由目标对象自身的属性键组成的数组
-```
+```js
 const obj = {
   name: 'zhang',
   age: 10,

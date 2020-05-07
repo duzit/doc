@@ -1,7 +1,7 @@
 ## nginx 配置相关
 ------
 ### 负载均衡
-```
+```conf
 upstream tomcatserver1 {  
   server 192.168.72.49:8080 weight=3;  
   server 192.168.72.49:8081;  

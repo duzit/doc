@@ -64,7 +64,7 @@
 * 具有BFC特性的元素可以看做是隔离的独立容器，容器里面的元素不会在布局上影响到外面的元素。
 #### 触发BFC
 * body根元素
-* 浮动元素 float出none以外
+* 浮动元素 float 除 none 以外
 * 绝对定位元素 position(absolute，fixed)
 * display为inline-block table-cell flex
 * overflow除visible以外的值

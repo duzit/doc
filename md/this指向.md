@@ -5,19 +5,19 @@
 * 要确定函数中this的指向，必须先找到该函数被调用的位置。
 * 始终指向最后调用它的对象
 
-```
-直接不带任何引用形式去调用函数，则this会指向全局对象，因为没有其他影响去改变this，  
-this默认就是指向全局对象（浏览器是window，Node中是global）的。这个结论是在非严格模式的情况下，  
-严格模式下这个this其实是undefined的。  
+```js
+// 直接不带任何引用形式去调用函数，则this会指向全局对象，因为没有其他影响去改变this，  
+// this默认就是指向全局对象（浏览器是window，Node中是global）的。这个结论是在非严格模式的情况下，  
+// 严格模式下这个this其实是undefined的。  
 var a = 1
 function test () {
-    console.log(this.a)
+  console.log(this.a)
 }
 test() // 1
 ```
 -----
-```
-谁去调用这个函数的，这个函数中的this就绑定到谁身上
+```js
+// 谁去调用这个函数的，这个函数中的this就绑定到谁身上
 var a = 1
 function test () {
     console.log(this.a)
@@ -43,8 +43,8 @@ var obj0 = {
 obj0.obj.test() // 2
 ```
 ---
-```
-最后的函数调用是 testCopy
+```js
+// 最后的函数调用是 testCopy
 var a = 1
 function test () {
     console.log(this.a)
@@ -57,11 +57,11 @@ var testCopy = obj.test
 testCopy() // 1
 ```
 -----
-```
-改变 this 指向 
-apply call bind
-new 
-箭头函数
+```js
+// 改变 this 指向 
+// apply call bind
+// new 
+// 箭头函数
 
 var a = 1
 function test () {
