@@ -97,7 +97,7 @@ let [q, w, e] = "Ben"
 console.log("q, w, e:", q, w, e) // q, w, e: B e n
 
  /**
-  * 解构赋值  start
+  * 解构赋值  end
   */
 
 /**

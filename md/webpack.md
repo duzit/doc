@@ -224,3 +224,73 @@ server: {
   gzip_vary on; #是否传输gzip压缩标志
 }
 ```
+
+### externals 外部扩展
+* 防止将某些 import 的包(package)打包到 bundle 中，而是在运行时(runtime)再去从外部获取这些扩展依赖(external dependencies)。
+```html
+<script
+  src="https://code.jquery.com/jquery-3.1.0.js"
+  integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk="
+  crossorigin="anonymous">
+</script>
+```
+```js
+module.exports = {
+  externals: {
+    // jquery 表示应该排除 import $ from 'jquery' 中的 jquery 模块
+    // 为了替换这个模块，jQuery 的值将被用来检索一个全局的 jQuery 变量
+    jquery: "jQuery"
+  }
+}
+```
+```js
+module.exports = {
+  //...
+  externals: [
+    {
+      // String
+      react: 'react',
+      // Object
+      lodash : {
+        commonjs: 'lodash',
+        amd: 'lodash',
+        root: '_' // indicates global variable
+      },
+      // Array
+      subtract: ['./math', 'subtract']
+    },
+    // Function
+    function(context, request, callback) {
+      if (/^yourregex$/.test(request)){
+        return callback(null, 'commonjs ' + request);
+      }
+      callback();
+    },
+    // Regex
+    /^(jquery|\$)$/i
+  ]
+};
+```
+
+### 合并多个 webpack 配置
+* webpack-merge
+```js
+// webpack.prod.conf.js
+const merge = require('webpack-merge')
+// 基础配置
+const baseWebpackConfig = require('./webpack.base.conf')
+const webpackConfig = merge(baseWebpackConfig, {
+  entry: {
+    // ...
+  },
+  output: {
+    // ...
+  },
+  module: {
+    // ...
+  },
+  plugins: [
+    // ...
+  ]
+})
+```
