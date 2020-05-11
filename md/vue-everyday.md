@@ -169,3 +169,23 @@ beforeRouteUpdate(to, from, next) {
 * v-bind:title="obj.title"
 * $event
 
+### 预渲染 prerender-spa-plugin
+* 改善少量页面
+* 在构建时 (build time) 简单地生成针对特定路由的静态 HTML 文件。  
+  优点是设置预渲染更简单，并可以将你的前端作为一个完全静态的站点。
+```js
+const path = require('path')
+const PrerenderSPAPlugin = require('prerender-spa-plugin')
+
+module.exports = {
+  plugins: [
+    ...
+    new PrerenderSPAPlugin({
+      // Required - The path to the webpack-outputted app to prerender.
+      staticDir: path.join(__dirname, 'dist'),
+      // Required - Routes to render.
+      routes: [ '/', '/about', '/some/deep/nested/route' ],
+    })
+  ]
+}
+```
