@@ -11,7 +11,7 @@
   其中包含应用程序需要的每个模块，然后将这些模块打包成一个或多个bundle。
 ```js
 module.exports = {
-	entry: 'server.js'
+  entry: 'server.js'
 }
 ```
 
@@ -23,10 +23,10 @@ module.exports = {
 const path = require(‘path’)
 
 module.exports = {
-	entry: './file.js',
-	output: {
-		path: path.resolve(__dirname, './dist'), // 目标输出目录path的绝对路径
-		filename: 'xxx.js', // 用于输出文件的文件名
+  entry: './file.js',
+  output: {
+    path: path.resolve(__dirname, './dist'), // 目标输出目录path的绝对路径
+    filename: 'xxx.js', // 用于输出文件的文件名
   }
 }
 ```
@@ -294,3 +294,159 @@ const webpackConfig = merge(baseWebpackConfig, {
   ]
 })
 ```
+
+### webpack 打包速度提升
+[链接](https://mp.weixin.qq.com/s/_qp4JDDwWwliEBr1IXKd8g)
+#### 影响打包速度分析
+* 搜索所有依赖模块 所需的搜索时间  
+```js
+// 编译代码的基础配置
+module.exports = {
+  // ...
+  module: {
+    // 项目中使用的 jquery 并没有采用模块化标准，webpack 忽略它
+    noParse: /jquery/,
+    rules: [
+      {
+        // 这里编译 js、jsx
+        // 注意：如果项目源码中没有 jsx 文件就不要写 /\.jsx?$/，提升正则表达式性能
+        test: /\.(js|jsx)$/,
+        // babel-loader 支持缓存转换出的结果，通过 cacheDirectory 选项开启
+        use: ['babel-loader?cacheDirectory'],
+        // 排除 node_modules 目录下的文件
+        // node_modules 目录下的文件都是采用的 ES5 语法，没必要再通过 Babel 去转换
+        exclude: /node_modules/,
+      },
+    ]
+  },
+  resolve: {
+    // 设置模块导入规则，import/require时会直接在这些目录找文件
+    // 可以指明存放第三方模块的绝对路径，以减少寻找
+    modules: [
+      path.resolve(`${project}/client/components`), 
+      path.resolve('h5_commonr/components'), 
+      'node_modules'
+    ],
+    // import导入时省略后缀
+    // 注意：尽可能的减少后缀尝试的可能性
+    extensions: ['.js', '.jsx', '.react.js', '.css', '.json'],
+    // import导入时别名，减少耗时的递归解析操作
+    alias: {
+      '@compontents': path.resolve(`${project}/compontents`),
+    }
+  },
+};
+```
+
+* 解析所有依赖模块 各种loader单线程处理  
+  优化解析时间,多线程打包  
+  thread-loader 放置在其他 loader 之前   
+  为了防止启动 worker 时的高延迟，提供了对 worker 池的优化：预热
+```js
+const threadLoader = require('thread-loader');
+
+const jsWorkerPool = {
+  // options
+
+  // 产生的 worker 的数量，默认是 (cpu 核心数 - 1)
+  // 当 require('os').cpus() 是 undefined 时，则为 1
+  workers: 2,
+
+  // 闲置时定时删除 worker 进程
+  // 默认为 500ms
+  // 可以设置为无穷大， 这样在监视模式(--watch)下可以保持 worker 持续存在
+  poolTimeout: 2000
+};
+
+const cssWorkerPool = {
+  // 一个 worker 进程中并行执行工作的数量
+  // 默认为 20
+  workerParallelJobs: 2,
+  poolTimeout: 2000
+};
+
+threadLoader.warmup(jsWorkerPool, ['babel-loader']);
+threadLoader.warmup(cssWorkerPool, ['css-loader', 'postcss-loader']);
+
+
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'thread-loader',
+            options: jsWorkerPool
+          },
+          'babel-loader'
+        ]
+      },
+      {
+        test: /\.s?css$/,
+        exclude: /node_modules/,
+        use: [
+          'style-loader',
+          {
+            loader: 'thread-loader',
+            options: cssWorkerPool
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+              importLoaders: 1
+            }
+          },
+          'postcss-loader'
+        ]
+      }
+      // ...
+    ]
+    // ...
+  }
+  // ...
+}
+```
+* 将所有依赖模块打包到一个文件 压缩时间
+  webpack3 打包时加上 --optimize-minimize 或者  
+```js
+module.exports = {
+    optimization: {
+        minimize: true,
+    },
+}
+```
+  webpack4 默认内置 terser-webpack-plugin  
+```js
+module.exports = {
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+      }),
+    ],
+  },
+};
+```
+
+* 二次打包时间 修改后需重新打包  
+  cache-loader  
+  保存和读取这些缓存文件会有一些时间开销，所以请只对性能开销较大的 loader 使用此 loader
+ ```js
+ module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.ext$/,
+        use: ['cache-loader', ...loaders],
+        include: path.resolve('src'),
+      },
+    ],
+  },
+};
+ ```
+  
