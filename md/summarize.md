@@ -656,3 +656,35 @@ Reflect.ownKeys([]) // ['length']
 Object.getOwnPropertySymbols(obj) // [Symbol(height)]
 ```
 * http://caibaojian.com/es6/symbol.html
+
+### height 100%
+* 新建项目中页面的高度一般是根据内容的高度，设置html元素的高度100%，  
+  可以撑满整个屏幕，html的height: 100%;是相对窗口大小的。
+```css
+html {
+  height: 100%;
+}
+```
+
+### checkbox 设置单选逻辑
+```js
+function change(types) {
+  this.radioType = []
+  if (types.length <= 1) {
+    this.radioType.push(types[0])
+  } else {
+    this.radioType.push(types[1])
+  }
+}
+```
+
+### toLocaleDateString()
+* 可根据本地时间把 Date 对象的日期部分转换为字符串，并返回结果
+```js
+let date = new Date()
+date.toLocaleDateString() // "2020/5/22"
+date.toLocaleDateString().replace(/\//g, '-') // "2020-5-22"
+```
+
+
+<h1>Hello</h1>

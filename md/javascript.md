@@ -41,3 +41,19 @@ Array.from([1, 2, 3]) // [1, 2, 3]
 ### <embed> 
 * 定义嵌入的内容，比如插件
 * 必须有 src 属性
+
+### JSON.stringify(value, replacer[, space])
+* 将一个 JavaScript 对象或者数组 转换为一个 JSON 字符串  
+  如果指定 replacer 是一个函数,则可以选择性地替换值,或者 replacer 是一个数组,  
+  则可以选择性的包含数组指定的属性  
+  space 指定缩进用的空白格,数字代表多少个空格,少于10.如果是字符串,将该字符串作为空白(length大于10,则取前10)
+* 实例参考 js/instance.js
+
+### 根据分辨率设置字体大小方法
+```js
+let scale = Math.max(document.body.offsetWidth / 1200, 1) // 倍数
+// font-size: 14px * scale
+```
+
+### Object.keys()
+* 返回一个由一个给定对象的自身可枚举属性组成的数组，数组中属性名的排列顺序和正常循环遍历该对象时返回的顺序一致
