@@ -67,6 +67,25 @@ console.log(Object.keys({
 })); // ["name", "age"]
 console.log(Object.keys({})); // []
 
+// Object.is()
+console.log(0 == ' '); // true
+console.log(null == undefined); // true
+console.log([1] == true); // true
+console.log(NaN == NaN); // false
+
+console.log(Object.is(0, ' ')); // false
+console.log(Object.is(null, undefined)); // false
+console.log(Object.is([1], true)); // false
+console.log(Object.is(NaN, NaN)); // true
+console.log(Object.is([], [])); // false
+console.log(Object.is(0, -0)); // false
+console.log(Object.is(0, +0)); // true
+console.log(Object.is(-0, -0)); // true
+console.log(Object.is({ a: 1 }, { a: 1 })); // false
+
+
+
+
 
 
 
