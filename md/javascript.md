@@ -60,3 +60,8 @@ let scale = Math.max(document.body.offsetWidth / 1200, 1) // 倍数
 
 ### Object.is()
 * 判断两个值是否是相等的值
+
+### 禁用右键
+```html
+<div class="main" oncontextmenu="return false"></div>
+```

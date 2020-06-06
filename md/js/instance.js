@@ -47,6 +47,11 @@ console.log(JSON.stringify(stringifyObj, null, "**"));
 //   **"name": "hello",
 //   **"age": 11
 // }
+console.log(JSON.stringify(stringifyObj, null, "\t"));
+// {
+// 	"name": "hello",
+// 	"age": 11
+// }
 
 // Object.keys()
 console.log('Object.keys()---');
@@ -83,9 +88,29 @@ console.log(Object.is(0, +0)); // true
 console.log(Object.is(-0, -0)); // true
 console.log(Object.is({ a: 1 }, { a: 1 })); // false
 
+// 参数检查
+const isRequired = () => { throw new Error('params is required.') }
+const print = (num = isRequired()) => { console.log(`params is ${num}`); }
+print(10) // params is 10
+// print() // Error
+print(null) // params is null
 
+// 从数组中删除虚假值
+let deleteNullEle = [1,2,3,0,null,undefined]
+console.log(deleteNullEle.filter(Boolean)); // [1,2,3]
 
+// 合并多个对象
+let obj1 = { name: 'zs', age: 10 }
+let obj2 = { id: '001', num: 99 }
+console.log({...obj1, ...obj2}); // {name: "zs", age: 10, id: "001", num: 99}
 
+//  禁用右键
+{/* <div class="main" oncontextmenu="return false"></div> */}
+
+// 检查数字是否为 2 的幂
+const isNumPowerOfTwo = num => !!num && (num & (num - 1)) == 0
+console.log(isNumPowerOfTwo(3)); // false
+console.log(isNumPowerOfTwo(4)); // true
 
 
 
