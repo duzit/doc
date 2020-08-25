@@ -1,5 +1,6 @@
 ## Event Loop 运行机制
 * [参考](http://www.ruanyifeng.com/blog/2014/10/event-loop.html)
+* https://juejin.im/post/6844903512845860872
 ---
 
 ### 为什么 JavaScript 是单线程？
