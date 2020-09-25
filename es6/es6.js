@@ -167,7 +167,7 @@ console.log('array...')
 let str = 'abc'
 console.log('str.length:', str.length)
 let arrFrom = Array.from(str)
-console.log('Array.from(str):', arrFrom)
+console.log('Array.from(str):', arrFrom) // [a,b,c]
 
 // 使用fill()初始化数组
 let arrFill = new Array(10)

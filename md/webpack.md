@@ -450,3 +450,17 @@ module.exports = {
 };
  ```
   
+### 文件打包配置大小限制 url-loader
+* limit 用于配置需内联的文件字节限制，类型是Number，默认值undefined，单位为字节。  
+  如果文件大小限制，该文件将默认交给 file-loader 处理，并将所有查询参数传递给它。  
+  也可以通过 fallback 参数配置指定的loader处理。  
+```js
+{
+  loader: 'url-loader',
+  options: {
+    limit: 8192,
+    mimetype: 'image/png', // 设置文件的 MIME 类型  如果未指定，则将使用文件扩展名来查找对应的 MIME 类型
+    fallback: 'responsive-loader'
+  }
+}
+```
