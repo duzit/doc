@@ -464,3 +464,28 @@ module.exports = {
   }
 }
 ```
+
+### output 中 publicPath 的作用
+* 对于按需加载（on-demand-load）或加载外部资源(图片 文件)，publicPath是个很重要的选项  
+  比如将资源放到cdn时，需要配置publicPath为cdn地址
+* 打包后访问资源的前缀，默认为/
+* webpack-dev-server 也会默认以publicPath为基准，使用它来决定在哪个目录下启用服务，来访问webpack输出的文件
+* 在编译时无法知道输出文件的publicPath的情况下，可以留空，然后在入口文件使用自由变量 __webpack_public_path__  
+  以便在运行时动态设置
+
+### entry 配置多入口  如果有几百个入口文件怎么配置
+```js
+// obj
+module.exports = {
+  entry: {
+    home: './home.js',
+    view: './view.js'
+  }
+}
+// array
+module.exports = {
+  entry: ['./home.js', './view.js']
+}
+```
+
+* n个入口情况，使用node的glob 获取指定文件夹下的所有入口文件
