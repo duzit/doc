@@ -78,7 +78,7 @@ module.exports = {
 ### 插件(plugins)
 * 插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。  
   想要使用一个插件只需require()它，然后把它添加到plugins数组中。  
-  在于解决loader无法解决的其他事。
+  用于解决loader无法解决的其他事。
 ```js 
 const path = require('path')
 const htmlWebpackPlugin = require('html-webpack-plugin') // 通过npm安装
@@ -226,7 +226,7 @@ server: {
 ```
 
 ### externals 外部扩展
-* 防止将某些 import 的包(package)打包到 bundle 中，而是在运行时(runtime)再去从外部获取这些扩展依赖(external dependencies)。
+* 防止将某些 import 的包(package)打包到 bundle 中，而是在运行时(runtime)再去从外部获取这些扩展依赖(external     dependencies)。例如从 cdn 引入 jquery，而不是打包。
 ```html
 <script
   src="https://code.jquery.com/jquery-3.1.0.js"
@@ -243,6 +243,7 @@ module.exports = {
   }
 }
 ```
+
 ```js
 module.exports = {
   //...
