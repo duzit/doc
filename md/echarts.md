@@ -139,6 +139,14 @@ let yAxisData = [
 
 ### 调整图形位置
 * grid
+```js
+grid: [{
+  left: '10%',
+  bottom: '10%',
+  top: '10%',
+  right: '10%'
+}],
+```
 
 ### 柱状图设置柱圆角
 * barBorderRadius
@@ -349,3 +357,6 @@ originalOptions: {
   }]
 }
 ```
+
+### 多条折线图 y轴刻度不准确
+* https://github.com/apache/echarts/issues/3808
