@@ -111,3 +111,36 @@ const { getThis, getString } = point;
 // getString(); // Uncaught TypeError: Cannot read property 'toString' of undefined
 // 绑定后 
 console.log(getThis().getString()); // x: 100; y: 200
+
+class Boo {
+  static num = 1;
+
+  #age = 0;
+
+  up () {
+    this.#age++;
+    console.log(this.#age);
+  }
+
+  get age() {
+    return this.#age;
+  }
+
+  set age(value) {
+    this.#age = value;
+  }
+}
+
+Boo.count = 12
+
+console.log(Boo.num); // 1
+console.log(Boo.count); // 12
+
+const boo = new Boo();
+boo.up(); // 1
+boo.up(); // 2
+// boo.#age; // Error
+
+console.log(boo.age); // 2
+boo.age = 10;
+console.log(boo.age); // 10
