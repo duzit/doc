@@ -41,3 +41,10 @@ console.log([...interset]);
 // arr1 相对于 arr2 的差集
 const diff = new Set([...arr1].filter(i => !arr2.has(i)))
 console.log([...diff]);
+
+// WeakSet
+const aWs = [[1, 3], [2, 4]];
+const ws = new WeakSet(aWs);
+console.log(ws);
+
+console.log(ws.has([1, 3]));
