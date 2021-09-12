@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ES6 Symbol</title>
+</head>
+<script>
+  const obj1 = {
+    toString() {
+      return 'abc'
+    }
+  }
+
+  const s1 = Symbol(obj1)
+  console.log(s1); // Symbol(abc)
+  // 如果没有定义toString方法 返回 Symbol([object Object])
+
+  const s2 = Symbol()
+  const s3 = Symbol()
+  console.log(s2 === s3); // false
+
+  const s4 = Symbol('hello')
+  // s4 + 'world' // Error
+  console.log(String(s4)); // Symbol(hello)
+  console.log(s4.toString()); // Symbol(hello)
+
+  console.log(Boolean(s4), !s4); // true false
+  // Number(s4) // Error
+
+  const s5 = Symbol('Ben')
+  console.log(s5.description); // Ben
+
+  const s6 = Symbol()
+  let obj6 = {}
+  obj6[s6] = 'hello'
+
+  let obj7 = {
+    [s6]: 'hello'
+  }
+
+  let obj8 = {}
+  Object.defineProperty(obj8, s6, { value: 'hello'})
+
+  const s7 = Symbol('boo')
+  const s8 = Symbol('bar')
+  const obj9 = {
+    [s7]: 'hello',
+    [s8]: 'ben',
+    name: 'Neo',
+    age: 12
+  }
+
+  console.log(Object.keys(obj9)); // ["name", "age"]
+  console.log(Object.getOwnPropertyNames(obj9)); // ["name", "age"]
+  console.log(JSON.stringify(obj9)); // {"name":"Neo","age":12}
+  console.log(Object.getOwnPropertySymbols(obj9)); // [Symbol(boo), Symbol(bar)]
+  
+  const ownKeys = Reflect.ownKeys(obj9);
+  for (const item of ownKeys) {
+    console.log(item);
+    // name
+    // age
+    // Symbol(boo)
+    // Symbol(bar)
+  }
+
+  const sf1 = Symbol.for('hello');
+  const sf2 = Symbol.for('hello');
+  console.log(sf1 === sf2); // true
+
+  console.log(Symbol.keyFor(sf1)); // hello
+  console.log(Symbol.keyFor(s4)); // undefined
+
+</script>
+<body>
+  
+</body>
+</html>
