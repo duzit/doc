@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数组的扩展</title>
+</head>
+<script>
+  const a1 = {...[1, 2, 3]};
+  console.log(a1);
+  // {
+  //   "0": 1,
+  //   "1": 2,
+  //   "2": 3
+  // }
+
+  function add(a, b) {
+    console.log(a + b);
+  }
+
+  add(...[1, 2]) // 3
+
+  function push(arr, items) {
+    arr.push(...items)
+    console.log(arr);
+  }
+  push([], [1,2,3,4,5])
+  // [
+  //   1,
+  //   2,
+  //   3,
+  //   4,
+  //   5
+  // ]
+  push([{
+    a:1
+  }], [{
+    b: 1
+  }, {
+    c: 1
+  }])
+  // [
+  //   {
+  //       "a": 1
+  //   },
+  //   {
+  //       "b": 1
+  //   },
+  //   {
+  //       "c": 1
+  //   }
+  // ]
+
+  function fn(a, b, c) {
+    console.log(arguments);
+  }
+
+  const params = [1, 2, 3];
+  // apply 传递多个参数
+  fn.apply(this, params)
+
+  // 扩展运算符替代apply
+  fn(...params)
+
+  let arr1 = [1, 2, 3]
+  let arr2 = [4, 5, 6]
+  // Array.prototype.push.apply(arr1, arr2)
+  arr1.push(...arr2)
+  console.log(arr1); // [1, 2, 3, 4, 5, 6]
+
+  // 复制数组
+  let a3 = [1, 2, 3]
+  let a4 = [...a3]
+  a4[0] = 0
+  console.log(a3, a4); // [1,2,3]  [0,2,3]
+
+  // 合并数组
+  const a5 = [...a3, ...a4]
+  console.log(a5); // [1, 2, 3, 0, 2, 3]
+
+  const obj = {
+    name: 'hello',
+    age: 12
+  }
+
+  const { name: Name, age: Age} = obj
+  console.log(Name, Age);
+
+  // 将类似数组的对象 转为数组 索引必须是正确的
+  const likeArr = {
+    '0': 'a',
+    '1': 'b',
+    '2': 'c',
+    length: 3
+  }
+
+  const likeA1 = Array.from(likeArr)
+  console.log(likeA1); // ['a', 'b', 'c']
+
+  // 类似数组的对象 有length属性
+  const likeA2 = Array.from({
+    length: 3
+  })
+  console.log(likeA2); // [undefined, undefined, undefined]
+
+  // Set 
+  const set = new Set(['a', 'b'])
+  console.log(Array.from(set)); // ['a', 'b']
+
+  const second = Array.from(likeArr, a => a + 'A')
+  console.log(second); // ['aA', 'bA', 'cA']
+
+  const likeA3 = {
+    '1': 'bb',
+    '0': 'aa',
+    length: 2
+  }
+
+  console.log(Array.from(likeA3));
+
+  window.onload = () => {
+    // nodelist
+    const ps = document.querySelectorAll('p')
+    console.log(Array.from(ps)); // [p, p, p]
+  }
+  
+</script>
+<body>
+  <div>
+    <p>123</p>
+    <p>1233</p>
+    <p>333</p>
+  </div>
+</body>
+</html>
