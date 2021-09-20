@@ -5,8 +5,45 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vue Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script>
+    window.onload = () => {
+      const app = new Vue({
+        el: '#app',
+        name: 'VueDemo',
+        props: {
+          num: {
+            type: Number,
+            default: 0
+          }
+        },
+        data() {
+          return {
+            message: 'hello',
+          }
+        },
+        computed: {
+          hi({ message }) {
+            return message + ' world.'
+          },
+          // 参数是 Vue 实例
+          params(params) {
+            console.log(params);
+            return '';
+          }
+        },
+        created() {
+          console.log(this.params);
+          // JSON.stringify
+        },
+      })
+    }
+  </script>
 </head>
 <body>
-  
+  <div id="app">
+    <span>{{ hi }}</span>
+
+  </div>
 </body>
 </html>
