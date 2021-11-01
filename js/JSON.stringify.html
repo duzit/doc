@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON.stringify</title>
+
+  <script>
+    const obj1 = {
+      name: 'Ben',
+      age: 12
+    };
+    // 转换对象
+    console.log(JSON.stringify(obj1));
+
+    // 转换值
+    console.log(JSON.stringify(true)); // 'true'
+    console.log(JSON.stringify('hello'));
+    console.log(JSON.stringify(12));
+    console.log(JSON.stringify(null) === 'null'); // true
+
+    // repalcer
+    console.log(JSON.stringify(obj1, (key, value) => {
+      return typeof value === 'number' ? value + '' : value
+    })); // {"name":"Ben","age":"12"}
+
+    // 指定数组
+    console.log(JSON.stringify(obj1, ['name'])); // {"name":"Ben"}
+
+    // space
+    console.log(JSON.stringify(obj1, null, 2));
+    // {
+    //   "name": "Ben",
+    //   "age": 12
+    // }
+
+    const obj2 = {
+      name: 'Lee',
+      age: 10,
+      sex: undefined,
+      getName: function() {
+
+      },
+      sym: Symbol('sym'),
+    }
+
+    console.log(JSON.stringify(obj2, null, 2));
+    // {
+    //   "name": "Lee",
+    //   "age": 10
+    // }
+
+    const arr2 = [
+      'hello',
+      12,
+      function() {},
+      Symbol('arr'),
+      undefined
+    ];
+    console.log(JSON.stringify(arr2)); // ["hello",12,null,null,null]
+
+    console.log(JSON.stringify(undefined)); // undefined
+    console.log(JSON.stringify(function() {})); // undefined
+    console.log(JSON.stringify(Symbol('sym'))); // undefined
+
+    console.log(JSON.stringify({
+      nan: NaN,
+      num: Infinity,
+      nu: null
+    })); // {"nan":null,"num":null,"nu":null}
+
+    console.log(JSON.stringify([NaN, null, Infinity])); // [null,null,null]
+
+    // toJSON 
+    const toJsonObj = {
+      name: 'hello',
+      age: 12,
+      toJSON() {
+        return {
+          sex: '1',
+          id: 6
+        }
+      }
+    }
+    console.log(JSON.stringify(toJsonObj)); // {"sex":"1","id":6}
+
+    // const obj4 = {
+    //   name: 'hh'
+    // }
+    // obj4.obj = obj4;
+    // console.log(JSON.stringify(obj4)); // Uncaught TypeError: Converting circular structure to JSON
+
+    let obj5 = {};
+    Object.defineProperties(obj5, {
+      name: {
+        value: 'hello',
+        enumerable: true
+      },
+      age: {
+        value: 12,
+        enumerable: false
+      }
+    })
+    console.log(JSON.stringify(obj5)); // {"name":"hello"}
+  </script> 
+</head>
+<body>
+  
+</body>
+</html>
