@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Object</title>
+  <script>
+    const ob1 = {
+      a: [1,2,3],
+      o: {
+        a: 1,
+        b: 2
+      },
+      map: new Map()
+    }
+
+    ob1.map.set('name', 'hello')
+
+    console.log(Object.getOwnPropertyNames(ob1.a)); // ['0','1','2','length']
+    console.log(Object.getOwnPropertyNames(ob1.o)); // ['a','b']
+    console.log(Object.getOwnPropertyNames(ob1.map)); // []
+
+    // 获取不可枚举属性
+    const ob2 = Object.create({}, {
+      name: {
+        value: 'me',
+        enumerable: false
+      }
+    })
+    ob2.age = 12
+    console.log(Object.getOwnPropertyNames(ob2)); // ['name', 'age']
+    // Object.keys 只获取可枚举属性
+    console.log(Object.keys(ob2)); // ['age']
+
+    // 不会获取原型链上的属性
+    function fnClass() {
+      this.name = 'Ben'
+      this.method = function() {}
+    }
+    fnClass.prototype.proName = 'proName'
+    fnClass.prototype.proMethod = function() {}
+    console.log(Object.getOwnPropertyNames(new fnClass())); // ['name', 'method']
+
+    // ES6 中 非对象参数会被强制转换为对象
+    console.log(Object.getOwnPropertyNames('foo')); // ['0', '1', '2', 'length']
+
+    console.log('Object.create()...');
+    const createObj = {
+      name: 'hh',
+      age: 12,
+      print: function() {
+        console.log(`my name is ${this.name}, age: ${this.age}`);
+      }
+    }
+    const createInstance = Object.create(createObj)
+    createInstance.age = 14
+    console.log(createInstance.__proto__); // 结构等于 createObj
+    console.log(createInstance.print()); // my name is hh, age: 14
+    console.log(createObj); // age = 12
+    // Object.create() 实现继承
+    function Father() {
+      this.x = 0
+      this.y = 1
+    }
+    Father.prototype.move = function(x, y) {
+      this.x += x
+      this.y += y
+      console.log('Father Moved.');
+    }
+
+    function Child() {
+      this.age = 12
+      Father.call(this)
+    }
+
+    Child.prototype = Object.create(Father.prototype)
+    Child.prototype.constructor = Child
+
+    const child = new Child()
+    console.log(child);
+    console.log(child instanceof Father); // true
+    console.log(child instanceof Child); // true
+
+    const o3 = Object.create(null) // 创建一个原型为 null 的空对象
+    const o4 = Object.create({}, {
+      foo: {
+        writable: true,
+        configurable: true,
+        value: 'foo'
+      },
+      bar: {
+        configurable: false,
+        get: function() { return 'bar' },
+        set: function(value) {
+          console.log('bar value: ', value);
+        }
+      },
+      age: {
+        value: 12
+      }
+    })
+
+    console.log(o4.foo); // 'foo'
+    console.log(o4.bar); // 'bar'
+    o4.bar = 'bb' // bar value: bb
+    console.log(o4.age); // 12
+    o4.age = 13
+    // 属性的特性 writable configurable enumerable 默认为 false
+    console.log(o4.age); // 12
+
+  </script>
+</head>
+<body>
+  
+</body>
+</html>

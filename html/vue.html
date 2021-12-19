@@ -34,7 +34,22 @@
         },
         created() {
           console.log(this.params);
+          const arr = [1, 2, 3];
+          Vue.delete(arr, 1) // [1,3] length: 2
+          // delete a[1] // [1, empty, 3] length: 3
+          console.log(arr);
           // JSON.stringify
+          
+          const obj = {
+            name: 'lll',
+            age: 12,
+            sex: 1
+          }
+
+          // Vue.delete(obj, 'age') // { name: 'lll', sex: 1}
+          delete obj.age 
+          console.log(obj);  // { name: 'lll', sex: 1}
+
         },
       })
     }
