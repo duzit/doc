@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>debounce throttle</title>
+</head>
+<script>
+  function handle() {
+    console.log(123);
+  }
+
+  function debounce(fn, delay = 300) {
+    let timer = null
+    return function() {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(fn, delay)
+    }
+  }
+
+  // function debounce(func, wait) {
+  //   let timeout;
+
+  //   return function () {
+  //     let context = this; // 保存this指向
+  //     let args = arguments; // 拿到event对象
+
+  //     if (timeout) clearTimeout(timeout)
+  //     timeout = setTimeout(function() {
+  //       func.apply(context, args)
+  //     }, wait);
+  //   }
+  // }
+
+  // function debounce(func, wait, immediate) {
+  //   let timeout, args, context, timestamp, result
+
+  //   const later = function() {
+  //     // 据上一次触发时间间隔
+  //     const last = +new Date() - timestamp
+
+  //     // 上次被包装函数被调用时间间隔last小于设定时间间隔wait
+  //     if (last < wait && last > 0) {
+  //       timeout = setTimeout(later, wait - last)
+  //     } else {
+  //       timeout = null
+  //       // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+  //       if (!immediate) {
+  //         result = func.apply(context, args)
+  //         if (!timeout) context = args = null
+  //       }
+  //     }
+  //   }
+
+  //   return function(...args) {
+  //     context = this
+  //     timestamp = +new Date()
+  //     const callNow = immediate && !timeout
+  //     // 如果延时不存在，重新设定延时
+  //     if (!timeout) timeout = setTimeout(later, wait)
+  //     if (callNow) {
+  //       result = func.apply(context, args)
+  //       context = args = null
+  //     }
+
+  //     return result
+  //   }
+  // }
+
+  // debounce 返回一个 fn 功能函数 
+  // 然后在 click 事件中执行 handleClick()
+  const handleClick = debounce(handle, 1000)
+
+  function throttle(fn, delay = 300) {
+    let time = Date.now()
+    return function() {
+      const isExecu = Date.now() - time > delay
+      if (isExecu) {
+        fn.apply(this)
+        time = Date.now()
+      }
+    }
+  }
+
+  function throttleTimer(fn, delay = 300) {
+    let timer  = null
+    return function() {
+      if (!timer) {
+        timer = setTimeout(() => {
+          fn.apply(this)
+          timer = null
+        }, delay);
+      }
+    }
+  }
+
+  const handleThrollte = throttle(handle, 1000)
+  
+</script>
+<body>
+  <div>
+    <button onclick="handleClick()">debounce</button>
+    <button onclick="handleThrollte()">throttle</button>
+  </div>
+</body>
+</html>

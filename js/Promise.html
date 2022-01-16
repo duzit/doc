@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promise</title>
+</head>
+<script>
+
+  const p1 = new Promise((resolve, reject) => {
+    console.log(1);
+    resolve()
+    console.log(2);
+  })
+  p1.then(() => {
+    console.log(3);
+  })
+  console.log(4);
+  // 1 2 4 3
+  // Promise 构造函数是同步执行的 .then 是异步执行
+
+  const p2 = new Promise((resolve, reject) => {
+    resolve('hello resolve')
+    reject('hello reject')
+  })
+
+  p2
+    .then(res => {
+      console.log('p2: ', res); // hello resolve
+    })
+    .then(res2 => {
+      console.log('p2: res2: ', res2); // undefined
+    })
+
+  const p3 = new Promise((resolve, reject) => {
+    // resolve('hello resolve')
+    reject('hello reject')
+  })
+
+  // then 包含两个参数时 
+  // then(onResolved, onRejected)
+  p3
+    .then(
+      // 当 p3 resolve 时
+      res => {
+        console.log(res, '--then 包含两个参数时 参数1'); // hello resolve --then 包含两个参数时 参数1
+      },
+      // 当 p3 reject 时
+      err => {
+        console.log(err, '--then 包含两个参数时 参数2'); // hello reject --then 包含两个参数时 参数2
+      }
+    )
+    // then 包含两个参数时 catch 还会有效果吗？ 不会生效！
+    // 不传 then 的第二个参数 才会执行 catch 
+    .catch(err => {
+      console.log(err, '--catch then包含两个参数时 catch 分支');
+    })
+
+
+</script>
+<body>
+  
+</body>
+</html>
